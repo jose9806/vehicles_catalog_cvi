@@ -3,6 +3,9 @@ import { Canvas, useFrame, extend, useThree, useLoader } from "@react-three/fibe
 import { useRef, Suspense, useState } from "react";
 import Dragable from './components/Dragable';
 import Model from './components/Model';
+import CameraControls from './components/CameraControls';
+import CameraButtons from './components/CameraButtons';
+import state from './state';
 import * as THREE from 'three';
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 extend({OrbitControls})
@@ -68,7 +71,7 @@ const Background = props =>{
 const Floor = props =>{
   return(
     <mesh {...props} receiveShadow>
-      <boxBufferGeometry args={[10,1,10]}/>
+      <boxBufferGeometry args={[20,0.5,20]}/>
       <meshPhysicalMaterial color='#41453A' fog={false}/>
     </mesh>
   )
@@ -77,7 +80,10 @@ const Floor = props =>{
 const Bulb = props =>{
   return(
     <mesh {...props} >
-      <pointLight castShadow/>
+      <pointLight 
+        castShadow
+        shadow-mapSize-height={2**9}
+        shadow-mapSize-width={2**9}/>
       <sphereBufferGeometry args={[0.2, 20, 20]}/>
       <meshPhongMaterial emissive='yellow'/>
     </mesh>
@@ -89,13 +95,18 @@ function App() {
         height: window.innerHeight
     });
   const handleClick = e => {
-    if(!window.activeMesh) return;
-    window.activeMesh.material.color = new THREE.Color(e.target.style.background)
+    if(!state.activeMesh) return;
+    state.activeMesh.material.color = new THREE.Color(e.target.style.background)
+    console.log("color changed")
   }
 
   return (
     <div style={{ height: "100vh", widht: "100vw" }}>
-      <div style={{ position: "absolute", zIndex:1}}>
+      <div style={{ 
+        position: "absolute", 
+        zIndex:1, margin:'auto', 
+        width:'fit-content',
+        display:'flex', top:'15vh', left:0, right:0}}>
         <div 
         style={{ height: 50, width:50, background: 'blue'}} 
         onClick={handleClick}>
@@ -103,40 +114,48 @@ function App() {
         </div>
         <div 
         onClick={handleClick} 
-        style={{ height: 50, width:50, background: 'green'}}>
+        style={{ height: 50, width:50, background: 'yellow'}}>
 
         </div>
         <div 
         onClick={handleClick} 
-        style={{ height: 50, width:50, background: 'black'}}>
+        style={{ height: 50, width:50, background: 'red'}}>
+
+        </div>
+        <div 
+        onClick={handleClick} 
+        style={{ height: 50, width:50, background: 'white'}}>
 
         </div>
       </div>
+      <CameraButtons/>
       <Canvas
         shadows={true}
         style={{ background: "black" }}
         camera={{position:[3,3,3]}}
         >
-
+          <CameraControls/>
           <ambientLight intensity={0.2}/>
-          <Bulb position={[0,3,0]}/>
+          <Bulb position={[-3,-4,0]}/>
+          <Bulb position={[0,-4,0]}/>
+          <Bulb position={[3,-4,0]}/>
         
             
               <Suspense fallback={null}>
                 <Dragable transformGroup>
 
-                  <Model 
+                  <Model
                   path='/ferrari_mission_winnow_2022_f1/scene.gltf'
-                  scale={new Array(3).fill(0.1)} 
-                  position={[3,0.3,0]}
+                  scale={new Array(3).fill(0.1)}
+                  position={[3,-5.9,0]}
                   rotation={[0,-1.6,0]}
                   />
                 </Dragable>
                 <Dragable transformGroup>
-                  <Model 
+                  <Model
                   path='/rigged_porche_cayman_gt4/scene.gltf'
-                  scale={new Array(3).fill(0.7)} 
-                  position={[-3,0.0,0]}
+                  scale={new Array(3).fill(0.7)}
+                  position={[-3,-6.2,0]}
                   />
                 </Dragable>
               </Suspense>
@@ -144,9 +163,10 @@ function App() {
           <Suspense fallback={null}>
             <Background windowDimensions={windowDimensions}/>
           </Suspense>
-          <Floor position={[0,-0.5,0]}/>
+          <Floor 
+          position={[0,-6.5,0]}
+/>
           <Orbit/>
-          <axesHelper args={[5]}/>
 
       </Canvas>
     </div>   );
